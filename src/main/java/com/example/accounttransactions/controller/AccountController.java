@@ -1,32 +1,42 @@
 package com.example.accounttransactions.controller;
 
-import com.example.accounttransactions.exception.AccountTransactionException;
 import com.example.accounttransactions.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.math.BigDecimal;
+
 @RestController
 public class AccountController {
 
+    private final AccountService accountService;
+
     @Autowired
-    private AccountService accountService;
+    public AccountController(AccountService accountService) {
+        this.accountService = accountService;
+    }
 
     @RequestMapping("/put")
-    public void put(@RequestParam String fullName, @RequestParam Long amount) throws AccountTransactionException {
-        accountService.topUpBalance(fullName, amount);
+    public ResponseEntity<?> put(@RequestParam String name, @RequestParam BigDecimal amount) {
+        accountService.changeBalance(name, amount);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @RequestMapping("/withdraw")
-    public void withdraw(@RequestParam String fullName, @RequestParam Long amount) throws AccountTransactionException {
-        accountService.topUpBalance(fullName, -amount);
+    public ResponseEntity<?> withdraw(@RequestParam String name, @RequestParam BigDecimal amount) {
+        accountService.changeBalance(name, amount.negate());
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @RequestMapping("/transfer")
     @ResponseBody
-    public void transfer(@RequestParam String fullNameFrom, @RequestParam String fullNameTo, @RequestParam Long amount) throws AccountTransactionException {
-        accountService.transferMoney(fullNameFrom, fullNameTo, amount);
+    public ResponseEntity<?> transfer(@RequestParam String nameFrom, @RequestParam String nameTo, @RequestParam BigDecimal amount) {
+        accountService.transferMoney(nameFrom, nameTo, amount);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

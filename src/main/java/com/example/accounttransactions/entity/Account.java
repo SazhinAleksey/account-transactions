@@ -8,6 +8,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import java.math.BigDecimal;
 
 @Entity
 @NoArgsConstructor
@@ -17,14 +18,13 @@ public class Account {
     @Getter
     private Long id;
     @Getter
-    @Setter
-    private String fullName;
+    private String name;
     @Getter
     @Setter
-    private Long balance;
+    private BigDecimal balance;
 
-    public Account(String fullName, Long balance) {
-        this.fullName = fullName;
+    public Account(String name, BigDecimal balance) {
+        this.name = name;
         this.balance = balance;
     }
 }

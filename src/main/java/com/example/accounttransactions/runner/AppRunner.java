@@ -8,18 +8,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+
 @Component
 public class AppRunner implements CommandLineRunner {
     private static final Logger log = LoggerFactory.getLogger(AppRunner.class);
 
+    private final AccountService accountService;
+
     @Autowired
-    private AccountService accountService;
+    public AppRunner(AccountService accountService) {
+        this.accountService = accountService;
+    }
 
     @Override
     public void run(String... args) {
         log.info("Start app. Adding accounts...");
-        accountService.insert(new Account("IvanovIvan", 0L));
-        accountService.insert(new Account("PetrovPetr", 1000L));
+        accountService.insert(new Account("Ivan", new BigDecimal(0)));
+        accountService.insert(new Account("Petr", new BigDecimal(1000)));
+        accountService.insert(new Account("Misha", new BigDecimal(100.1)));
         log.info("Add successful!");
     }
 }

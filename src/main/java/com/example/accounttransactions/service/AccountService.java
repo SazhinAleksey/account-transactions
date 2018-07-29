@@ -2,41 +2,42 @@ package com.example.accounttransactions.service;
 
 import com.example.accounttransactions.entity.Account;
 import com.example.accounttransactions.exception.AccountTransactionException;
+import com.example.accounttransactions.repository.AccountRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Propagation;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import java.math.BigDecimal;
 
-@Repository
+@Service
+@Transactional
 public class AccountService {
-    @PersistenceContext
-    private EntityManager entityManager;
+    private final AccountRepository accountRepository;
 
-    @Transactional
-    public void insert(Account account) {
-        entityManager.persist(account);
+    @Autowired
+    public AccountService(AccountRepository accountRepository) {
+        this.accountRepository = accountRepository;
     }
 
-    @Transactional(propagation = Propagation.REQUIRED)
-    public void topUpBalance(String fullName, Long amount) throws AccountTransactionException {
-        Account account = (Account) entityManager.createQuery("select a from Account a where a.fullName = :value")
-                .setParameter("value", fullName).getSingleResult();
+    public void insert(Account account) {
+        accountRepository.saveAndFlush(account);
+    }
+
+    public void changeBalance(String name, BigDecimal amount) throws AccountTransactionException {
+        Account account = accountRepository.findAccountByName(name);
         if (account == null) {
-            throw new AccountTransactionException(String.format("No such account: %s", fullName));
+            throw new AccountTransactionException(String.format("No such account: %s", name));
         }
-        Long newBalance = account.getBalance() + amount;
-        if (account.getBalance() + amount < 0) {
-            throw new AccountTransactionException(String.format("Not enough money on the account: %s. Balance is: %d", account.getFullName(), account.getBalance()));
+        BigDecimal newBalance = account.getBalance().add(amount);
+        if (newBalance.compareTo(BigDecimal.ZERO) < 0) {
+            throw new AccountTransactionException(String.format("Not enough money on the account: %s.", account.getName()));
         }
         account.setBalance(newBalance);
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW,
-            rollbackFor = AccountTransactionException.class)
-    public void transferMoney(String fullNameFrom, String fullNameTo, Long amount) throws AccountTransactionException {
-        topUpBalance(fullNameFrom, -amount);
-        topUpBalance(fullNameTo, amount);
+    public void transferMoney(String nameFrom, String nameTo, BigDecimal amount) throws AccountTransactionException {
+        changeBalance(nameFrom, amount.negate());
+        changeBalance(nameTo, amount);
     }
 }
