@@ -16,6 +16,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest
+@Transactional
 public class AccountServiceTest {
     @Autowired
     private AccountService accountService;
@@ -23,7 +24,6 @@ public class AccountServiceTest {
     private AccountRepository accountRepository;
 
     @Test
-    @Transactional
     public void insertOk() {
         Account accountExpected = new Account("Test", new BigDecimal(100));
         accountService.insert(accountExpected);
@@ -32,7 +32,6 @@ public class AccountServiceTest {
     }
 
     @Test
-    @Transactional
     public void changeBalancePositiveOk() {
         Account accountExpected = new Account("Test", new BigDecimal(100));
         accountService.insert(accountExpected);
@@ -42,7 +41,6 @@ public class AccountServiceTest {
     }
 
     @Test
-    @Transactional
     public void changeBalanceNegativeOk() {
         Account accountExpected = new Account("Test", new BigDecimal(100));
         accountService.insert(accountExpected);
@@ -52,14 +50,12 @@ public class AccountServiceTest {
     }
 
     @Test(expected = AccountTransactionException.class)
-    @Transactional
     public void changeBalanceNoSuchAccountExc() {
         Account accountExpected = new Account("Test", new BigDecimal(100));
         accountService.changeBalance(accountExpected.getName(), new BigDecimal(101.22));
     }
 
     @Test(expected = AccountTransactionException.class)
-    @Transactional
     public void changeBalanceNotEnoughMoneyExc() {
         Account accountExpected = new Account("Test", new BigDecimal(100));
         accountService.insert(accountExpected);
@@ -67,7 +63,6 @@ public class AccountServiceTest {
     }
 
     @Test
-    @Transactional
     public void transferMoney() {
         Account accountExpectedFrom = new Account("Test1", new BigDecimal(100));
         Account accountExpectedTo = new Account("Test2", new BigDecimal(100));
