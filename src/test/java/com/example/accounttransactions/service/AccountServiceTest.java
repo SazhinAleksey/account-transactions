@@ -11,6 +11,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -22,6 +23,14 @@ public class AccountServiceTest {
     private AccountService accountService;
     @Autowired
     private AccountRepository accountRepository;
+
+    @Test
+    public void getAccountsOk() {
+        Account accountExpected = new Account("Test", new BigDecimal(100));
+        accountService.insert(accountExpected);
+        List<Account> accounts = accountService.getAccounts();
+        assertThat(accounts).isNotNull();
+    }
 
     @Test
     public void insertOk() {

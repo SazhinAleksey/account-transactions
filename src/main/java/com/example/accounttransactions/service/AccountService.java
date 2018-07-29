@@ -4,11 +4,11 @@ import com.example.accounttransactions.entity.Account;
 import com.example.accounttransactions.exception.AccountTransactionException;
 import com.example.accounttransactions.repository.AccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Service
 @Transactional
@@ -18,6 +18,10 @@ public class AccountService {
     @Autowired
     public AccountService(AccountRepository accountRepository) {
         this.accountRepository = accountRepository;
+    }
+
+    public List<Account> getAccounts() {
+        return accountRepository.findAll();
     }
 
     public void insert(Account account) {
