@@ -1,5 +1,7 @@
 package com.example.accounttransactions.service;
 
+import com.example.accounttransactions.dto.AccountDto;
+import com.example.accounttransactions.dto.TransferDto;
 import com.example.accounttransactions.entity.Account;
 import com.example.accounttransactions.exception.AccountTransactionException;
 import com.example.accounttransactions.repository.AccountRepository;
@@ -11,7 +13,6 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @Service
-@Transactional
 public class AccountService {
     private final AccountRepository accountRepository;
 
@@ -24,24 +25,45 @@ public class AccountService {
         return accountRepository.findAll();
     }
 
-    public void insert(Account account) {
-        accountRepository.saveAndFlush(account);
+    @Transactional
+    public void depositMoney(AccountDto accountDto) throws AccountTransactionException {
+        Account account = getAccountByName(accountDto.getName());
+        BigDecimal newBalance = account.getBalance().add(accountDto.getAmount());
+        setBalance(account, newBalance);
     }
 
-    public void changeBalance(String name, BigDecimal amount) throws AccountTransactionException {
-        Account account = accountRepository.findAccountByName(name);
-        if (account == null) {
-            throw new AccountTransactionException(String.format("No such account: %s", name));
+    @Transactional
+    public void withdrawMoney(AccountDto accountDto) throws AccountTransactionException {
+        Account account = getAccountByName(accountDto.getName());
+        BigDecimal newBalance = account.getBalance().add(accountDto.getAmount().negate());
+        setBalance(account, newBalance);
+    }
+
+    @Transactional
+    public void transferMoney(TransferDto transferDto) throws AccountTransactionException {
+        Account accountFrom = getAccountByName(transferDto.getNameFrom());
+        Account accountTo = getAccountByName(transferDto.getNameTo());
+        BigDecimal amount = transferDto.getAmount();
+        BigDecimal withdrawAmount = accountFrom.getBalance().add(amount.negate());
+        BigDecimal depositAmount = accountTo.getBalance().add(amount);
+        setBalance(accountFrom, withdrawAmount);
+        setBalance(accountTo, depositAmount);
+    }
+
+    private Account getAccountByName(String accountName) {
+        Account account = accountRepository.findAccountByName(accountName);
+        if (account != null) {
+            return account;
+        } else {
+            throw new AccountTransactionException(String.format("No such account: %s", accountName));
         }
-        BigDecimal newBalance = account.getBalance().add(amount);
-        if (newBalance.compareTo(BigDecimal.ZERO) < 0) {
+    }
+
+    private void setBalance(Account account, BigDecimal balance) {
+        if (balance.compareTo(BigDecimal.ZERO) >= 0) {
+            account.setBalance(balance);
+        } else {
             throw new AccountTransactionException(String.format("Not enough money on the account: %s.", account.getName()));
         }
-        account.setBalance(newBalance);
-    }
-
-    public void transferMoney(String nameFrom, String nameTo, BigDecimal amount) throws AccountTransactionException {
-        changeBalance(nameFrom, amount.negate());
-        changeBalance(nameTo, amount);
     }
 }

@@ -4,20 +4,21 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.math.BigDecimal;
+
+import static javax.persistence.GenerationType.SEQUENCE;
 
 @Entity
 @NoArgsConstructor
 public class Account {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @SequenceGenerator(name = "ACCOUNT_ID_GENERATOR", sequenceName = "account_seq", allocationSize = 1)
+    @GeneratedValue(strategy = SEQUENCE, generator = "ACCOUNT_ID_GENERATOR")
     @Getter
     private Long id;
     @Getter
+    @Column(unique = true)
     private String name;
     @Getter
     @Setter

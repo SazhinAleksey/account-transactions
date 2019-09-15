@@ -1,86 +1,93 @@
 package com.example.accounttransactions.service;
 
+import com.example.accounttransactions.dto.AccountDto;
+import com.example.accounttransactions.dto.TransferDto;
 import com.example.accounttransactions.entity.Account;
 import com.example.accounttransactions.exception.AccountTransactionException;
 import com.example.accounttransactions.repository.AccountRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import java.math.BigDecimal;
-import java.util.List;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockito.Mockito.*;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.NONE;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest
-@Transactional
+@SpringBootTest(webEnvironment = NONE)
+@RunWith(SpringRunner.class)
 public class AccountServiceTest {
-    @Autowired
-    private AccountService accountService;
-    @Autowired
+
+    @Mock
     private AccountRepository accountRepository;
+    @InjectMocks
+    private AccountService accountService;
 
     @Test
-    public void getAccountsOk() {
-        Account accountExpected = new Account("Test", new BigDecimal(100));
-        accountService.insert(accountExpected);
-        List<Account> accounts = accountService.getAccounts();
-        assertThat(accounts).isNotNull();
+    public void test_getAccounts_success() {
+        accountService.getAccounts();
+
+        verify(accountRepository, times(1)).findAll();
     }
 
     @Test
-    public void insertOk() {
-        Account accountExpected = new Account("Test", new BigDecimal(100));
-        accountService.insert(accountExpected);
-        Account accountFromDb = accountRepository.findAccountByName(accountExpected.getName());
-        assertThat(accountFromDb).isEqualTo(accountExpected);
+    public void test_depositMoney_success() {
+        String name = "Name";
+        BigDecimal amount = new BigDecimal(1);
+        when(accountRepository.findAccountByName(name)).thenReturn(new Account(name, amount));
+
+        accountService.depositMoney(new AccountDto(name, amount));
+
+        verify(accountRepository, times(1)).findAccountByName(name);
     }
 
     @Test
-    public void changeBalancePositiveOk() {
-        Account accountExpected = new Account("Test", new BigDecimal(100));
-        accountService.insert(accountExpected);
-        accountService.changeBalance(accountExpected.getName(), new BigDecimal(101.22));
-        Account accountFromDb = accountRepository.findAccountByName(accountExpected.getName());
-        assertThat(accountFromDb.getBalance()).isEqualTo(new BigDecimal(201.22));
+    public void test_withdrawMoney_success() {
+        String name = "Name";
+        BigDecimal amount = new BigDecimal(1);
+        when(accountRepository.findAccountByName(name)).thenReturn(new Account(name, amount));
+
+        accountService.withdrawMoney(new AccountDto(name, amount));
+
+        verify(accountRepository, times(1)).findAccountByName(name);
     }
 
     @Test
-    public void changeBalanceNegativeOk() {
-        Account accountExpected = new Account("Test", new BigDecimal(100));
-        accountService.insert(accountExpected);
-        accountService.changeBalance(accountExpected.getName(), new BigDecimal(99).negate());
-        Account accountFromDb = accountRepository.findAccountByName(accountExpected.getName());
-        assertThat(accountFromDb.getBalance()).isEqualTo(new BigDecimal(1));
+    public void test_transferMoney_success() {
+        String nameFrom = "NameFrom";
+        String nameTo = "NameTo";
+        BigDecimal amount = new BigDecimal(1);
+        when(accountRepository.findAccountByName(nameFrom)).thenReturn(new Account(nameFrom, amount));
+        when(accountRepository.findAccountByName(nameTo)).thenReturn(new Account(nameTo, amount));
+
+        accountService.transferMoney(new TransferDto(nameFrom, nameTo, amount));
+
+        verify(accountRepository, times(1)).findAccountByName(nameFrom);
+        verify(accountRepository, times(1)).findAccountByName(nameTo);
     }
 
     @Test(expected = AccountTransactionException.class)
-    public void changeBalanceNoSuchAccountExc() {
-        Account accountExpected = new Account("Test", new BigDecimal(100));
-        accountService.changeBalance(accountExpected.getName(), new BigDecimal(101.22));
+    public void test_depositMoney_throwExc() {
+        String name = "Name";
+        BigDecimal amount = new BigDecimal(1);
+        when(accountRepository.findAccountByName(name)).thenReturn(null);
+
+        accountService.depositMoney(new AccountDto(name, amount));
+
+        verify(accountRepository, times(1)).findAccountByName(name);
     }
 
     @Test(expected = AccountTransactionException.class)
-    public void changeBalanceNotEnoughMoneyExc() {
-        Account accountExpected = new Account("Test", new BigDecimal(100));
-        accountService.insert(accountExpected);
-        accountService.changeBalance(accountExpected.getName(), new BigDecimal(-101.22));
-    }
+    public void test_withdrawMoney_throwExc() {
+        String name = "Name";
+        BigDecimal amount = new BigDecimal(1);
+        when(accountRepository.findAccountByName(name)).thenReturn(new Account(name, new BigDecimal(0)));
 
-    @Test
-    public void transferMoney() {
-        Account accountExpectedFrom = new Account("Test1", new BigDecimal(100));
-        Account accountExpectedTo = new Account("Test2", new BigDecimal(100));
-        accountService.insert(accountExpectedFrom);
-        accountService.insert(accountExpectedTo);
-        accountService.transferMoney(accountExpectedFrom.getName(), accountExpectedTo.getName(), new BigDecimal(100));
-        Account accountFromDbFrom = accountRepository.findAccountByName(accountExpectedFrom.getName());
-        Account accountFromDbTo = accountRepository.findAccountByName(accountExpectedTo.getName());
-        assertThat(accountFromDbFrom.getBalance()).isEqualTo(new BigDecimal(0));
-        assertThat(accountFromDbTo.getBalance()).isEqualTo(new BigDecimal(200));
+        accountService.withdrawMoney(new AccountDto(name, amount));
+
+        verify(accountRepository, times(1)).findAccountByName(name);
     }
 }
