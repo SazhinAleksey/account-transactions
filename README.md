@@ -15,14 +15,14 @@ mvn spring-boot:run
 ### Table with default users
 | id | name | balance |
 | ------ | ------ | ------ |
-| 1 | Ivan | 0 |
-| 2 | Petr | 1000 |
-| 3 | Misha | 100.1 |
+| 1 | Ivan | 0.00 |
+| 2 | Petr | 1000.00 |
+| 3 | Misha | 100.10 |
 
 ### API
-| Method Type | URL | Params | Example |
+| Method Type | URL | Body (Json) | Example |
 | ------ | ------ | ------ | ------ |
-| GET | / |  | http://localhost:8080/ |
-| GET | /put | name, amount | http://localhost:8080/put?name=Ivan&amount=100.1 |
-| GET | /withdraw | name, amount | http://localhost:8080/withdraw?name=Ivan&amount=100 |
-| GET | /transfer | nameFrom, nameTo, amount | http://localhost:8080/transfer?nameFrom=Petr&nameTo=Ivan&amount=100 |
+| GET | /accounts |  | http://localhost:8080/ |
+| PUT | /deposit | {"name": "Ivan","amount": 1} | http://localhost:8080/deposit |
+| PUT | /withdraw | {"name": "Ivan","amount": 1} | http://localhost:8080/withdraw |
+| PUT | /transfer | {"nameFrom": "Petr","nameTo": "Misha","amount": 1} | http://localhost:8080/transfer |
