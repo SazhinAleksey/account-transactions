@@ -23,6 +23,6 @@ mvn spring-boot:run
 | Method Type | URL | Body (Json) | Example |
 | ------ | ------ | ------ | ------ |
 | GET | /accounts |  | http://localhost:8080/ |
-| PUT | /deposit | {"name": "Ivan","amount":1} | http://localhost:8080/deposit |
-| PUT | /withdraw | {"name": "Ivan","amount":1} | http://localhost:8080/withdraw |
-| PUT | /transfer | {"nameFrom": "Petr","nameTo": "Misha","amount":1} | http://localhost:8080/transfer |
+| PUT | /deposit | {"name": "Ivan","amount": 1} | http://localhost:8080/deposit |
+| PUT | /withdraw | {"name": "Ivan","amount": 1} | http://localhost:8080/withdraw |
+| PUT | /transfer | {"nameFrom": "Petr","nameTo": "Misha","amount": 1} | http://localhost:8080/transfer |
